@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script>
+
+</head>
+<body>
+  <div id="todo">
+    <div class="wrapper fadeInDown">
+        <div id="formContent">
+          <!-- Tabs Titles -->
+          <h2 id="iniciarSesion" class="active"onclick="iniciarSesion()"> Iniciar Sesion </h2>
+          <h2 id="registrarse" class="inactive underlineHover" onclick="registrarseError()">Registrarse</h2>
+      
+
+      
+          <!-- Login Form -->
+          <form id="login">
+            <a href="https://miarghost3.github.io/miarghost3.0/descargarPagina.html" id="regisError" style="color: red; font-size:medium;display: none;">La pagina se quedo sin espacio para nuevos usuarios, porfavor click aca para ir a la segunda pagina que es lo mismo.</a>
+
+            <input type="text" id="mail2" class="fadeIn second" name="login" placeholder="mail">
+            <a id="mailError2" style="color: red; font-size: x-small;display: none;">El mail no existe</a>
+            <input type="text" id="contra2" class="fadeIn third" name="login" placeholder="contraseña">
+            <a id="contraError2" style="color: red; font-size: x-small;display: none;">La contraseña es incorrecta</a>
+            <input id="btnRegis2"  type="button" class="fadeIn fourth" value="Iniciar Sesion" onclick="datosEnviadosIniciarSesion()">
+          </form>
+      
+          <form id="registrar" style="display: none;">
+            <input type="text" id="mail" class="fadeIn second" name="mail" placeholder="mail">
+            <a id="mailError" style="color: red; font-size: x-small;display: none;">El mail ya esta en uso</a>
+            <input type="text" id="contra" class="fadeIn third" name="contra" placeholder="contraseña">
+            <a id="contraError" style="color: red; font-size: x-small;display: none;">La contraseña no puede estar en blanco</a>
+            <input id="btnRegis" type="button" class="fadeIn fourth" value="Crear Cuenta" onclick="datosEnviadosRegistrar()">
+          </form>
+
+
+          <!-- Remind Passowrd -->
+          <div id="formFooter">
+            <a class="underlineHover" href="#">Olvidaste La Contraseña?</a>
+          </div>
+      
+        </div>
+      </div>
+    </div>
+    <div id="load" class="load" style="display: none;">
+      <div class="progress">
+        <div class="loader" id="loader">Loading...</div>
+            </div>  </div>
+
+            <style>
+              body, html {
+                  margin: 0;
+                  padding: 0;
+                  height: 100%;
+                  overflow: hidden;
+              }
+              .ad-container {
+                  display: none; /* Oculta el contenedor en pantallas grandes */
+              }
+              .ad-img {
+                  width: 100%;
+                  height: 110%;
+                  object-fit: cover; /* Para estirar la imagen */
+              }
+          
+              /* Consulta de medios para pantallas con un ancho máximo de 600px (celulares) */
+              @media (max-width: 600px) {
+                  .ad-container {
+                      display: block; /* Muestra el contenedor en dispositivos móviles */
+                      position: fixed;
+                      bottom: 0;
+                      left: 0;
+                      width: 100%;
+                      height: 15vh; /* Cambia esto según lo alto que quieras que sea el anuncio */
+                      overflow: hidden;
+                  }
+              }
+          </style>
+          <script>
+            function redirTiktok() {
+              window.open('https://www.tiktok.com/@willfort1v1', '_blank');
+
+            }
+          </script>
+        <script>
+                    const firebaseConfig = {
+          apiKey: "AIzaSyC-VuSbZtYwfeB8PfbG_py75yGu9OTcRIQ",
+          authDomain: "miargentina-76248.firebaseapp.com",
+          projectId: "miargentina-76248",
+          storageBucket: "miargentina-76248.appspot.com",
+          messagingSenderId: "673479424832",
+          appId: "1:673479424832:web:bbe4fa209631fcf51718a5"
+        };
+        const app = firebase.initializeApp(firebaseConfig);
+
+        window.onload = function() {
+            localStorage.clear();
+        }
+        var fechaHoraActual = new Date();
+        var horaActual = fechaHoraActual.toLocaleTimeString();
+        var fechaActual = fechaHoraActual.toLocaleDateString();
+
+        function registrarseError() {
+            document.getElementById("mail").style.display = "none";
+            document.getElementById("mail2").style.display = "none";
+            document.getElementById("contra").style.display = "none";
+            document.getElementById("contra2").style.display = "none";
+            document.getElementById("btnRegis").style.display = "none";
+            document.getElementById("btnRegis2").style.display = "none";
+            document.getElementById("regisError").style.display = "block";
+        }
+        function registrarse() {
+            document.getElementById("iniciarSesion").classList.remove("active");
+            document.getElementById("iniciarSesion").classList.add("underlineHover", "inactive");
+            document.getElementById("registrarse").classList.add("active");
+            document.getElementById("registrar").style.display= "block";
+            document.getElementById("login").style.display= "none";
+        
+           
+        }
+        function iniciarSesion() {
+            document.getElementById("registrarse").classList.remove("active");
+            document.getElementById("registrarse").classList.add("underlineHover", "inactive");
+            document.getElementById("iniciarSesion").classList.add("active");
+            document.getElementById("registrar").style.display= "none";
+            document.getElementById("login").style.display= "block";
+            location.reload();
+
+        }
+
+        function datosEnviadosIniciarSesion() {
+          const mail = document.getElementById('mail2').value;
+            const contrasenia = document.getElementById('contra2').value;
+          const db = firebase.firestore();
+          const usuariosRef = db.collection('Usuarios');
+          document.getElementById("todo").style.display= "none";
+          document.getElementById("load").style.display= "block";
+          
+            usuariosRef.where('mail', '==', mail)
+              .get()
+              .then((querySnapshot) => {
+                if (!(querySnapshot.size > 0)) {
+                  console.log("El usuario no existe");
+                  document.getElementById("mailError2").style.display = "block";
+                  document.getElementById("todo").style.display= "block";
+                  document.getElementById("load").style.display= "none";
+                } else {
+                  usuariosRef.where('contrasenia', '==', contrasenia)
+                    .get()
+                    .then((querySnapshot) => {
+                      if (!(querySnapshot.size > 0)) {
+                        console.log("Contraseña incorrecta");
+                        document.getElementById("contraError2").style.display = "block";
+                        document.getElementById("mailError2").style.display = "none";
+                        document.getElementById("todo").style.display= "block";
+                        document.getElementById("load").style.display= "none";
+                      } else {
+                        console.log("entro");
+                        document.getElementById("mailError2").style.display = "none";
+                        document.getElementById("contraError2").style.display = "none";
+                        localStorage.setItem("mail", mail);
+                        window.location.href = "miArgentinaMenu.html";
+                      }
+                    })
+                    .catch((error) => {
+                      console.error('Error al consultar la base de datos:', error);
+                    });
+                }
+              })
+              .catch((error) => {
+                console.error('Error al consultar la base de datos:', error);
+              });    
+
+
+        }
+
+        function datosEnviadosRegistrar() {
+            const mail = document.getElementById('mail').value;
+            const contrasenia = document.getElementById('contra').value;
+            document.getElementById("todo").style.display= "none";
+            document.getElementById("load").style.display= "block";
+            const db = firebase.firestore();
+            
+            if (contrasenia == "") {
+                 document.getElementById("contraError").style.display = "block";
+                 document.getElementById("todo").style.display= "block";
+              document.getElementById("load").style.display= "none";
+
+            }else{
+                const docData = {
+                    mail: mail,
+                    contrasenia:contrasenia,
+                    activado:false,
+                    creacion:fechaActual
+            }
+
+            const usuariosRef = db.collection('Usuarios');
+            usuariosRef.where('mail', '==', mail)
+            .get()
+            .then((querySnapshot) => {
+            if (querySnapshot.size > 0) {
+              document.getElementById("mailError").style.display = "block";
+              document.getElementById("contraError").style.display = "none";
+              document.getElementById("todo").style.display= "block";
+            document.getElementById("load").style.display= "none";
+
+                  console.log("El correo ya existe en la base de datos");
+         } else {
+            usuariosRef.where('mail', '==', mail)
+              .get()
+              .then((querySnapshot) => {
+                if (querySnapshot.size > 0) {
+                    document.getElementById("mailError").style.display = "block";
+
+                  document.getElementById("contraError").style.display = "none";
+
+                } else {
+                  db.collection("Usuarios").doc(mail).set(docData)
+                    .then(() => {
+                      console.log("Documento escrito exitosamente");
+                      localStorage.setItem("mail",mail);
+                      window.location.href = "index.html";
+                    })
+                    .catch((error) => {
+                      console.error('Error al escribir el documento:', error);
+                    });
+                }
+              })
+              .catch((error) => {
+                console.error('Error al consultar la base de datos:', error);
+              });
+          }
+        })
+        .catch((error) => {
+          console.error('Error al consultar la base de datos:', error);
+        });
+
+
+
+
+
+        }
+    }
+    var fechaHoraActual = new Date();
+        var horaActual = fechaHoraActual.toLocaleTimeString();
+        var fechaActual = fechaHoraActual.toLocaleDateString();
+        function verificarFechaActivacionParaTodos() {
+    const db = firebase.firestore();
+    const usuariosRef = db.collection('Usuarios');
+
+    usuariosRef.get()
+        .then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+                const usuario = doc.data();
+                if (usuario.activado && !usuario.fechaActivacion) {
+                    usuariosRef.doc(doc.id).update({
+                        fechaActivacion: fechaActual
+                    }).then(() => {
+                        console.log(`Se agregó la fecha de activación para el usuario ${doc.id} correctamente.`);
+                    }).catch((error) => {
+                        console.error(`Error al agregar la fecha de activación para el usuario ${doc.id}:`, error);
+                    });
+                }
+            });
+        })
+        .catch((error) => {
+            console.error("Error al obtener los usuarios:", error);
+        });
+}
+
+
+
+      </script>
+
+
+
+
+      <style>@import url('https://fonts.googleapis.com/css?family=Poppins');
+
+        /* BASIC */
+        
+        html {
+          background-color: #56baed;
+        }
+        
+        body {
+          font-family: "Poppins", sans-serif;
+          height: 100vh;
+        }
+        
+        a {
+          color: #92badd;
+          display:inline-block;
+          text-decoration: none;
+          font-weight: 400;
+        }
+        
+        h2 {
+          text-align: center;
+          font-size: 16px;
+          font-weight: 600;
+          text-transform: uppercase;
+          display:inline-block;
+          margin: 40px 8px 10px 8px; 
+          color: #cccccc;
+        }
+        
+        
+        
+        /* STRUCTURE */
+        
+        .wrapper {
+          display: flex;
+          align-items: center;
+          flex-direction: column; 
+          justify-content: center;
+          width: 100%;
+          min-height: 100%;
+          padding: 20px;
+        }
+        
+        #formContent {
+          -webkit-border-radius: 10px 10px 10px 10px;
+          border-radius: 10px 10px 10px 10px;
+          background: #fff;
+          padding: 30px;
+          width: 90%;
+          max-width: 450px;
+          position: relative;
+          padding: 0px;
+          -webkit-box-shadow: 0 30px 60px 0 rgba(0,0,0,0.3);
+          box-shadow: 0 30px 60px 0 rgba(0,0,0,0.3);
+          text-align: center;
+        }
+        
+        #formFooter {
+          background-color: #f6f6f6;
+          border-top: 1px solid #dce8f1;
+          padding: 25px;
+          text-align: center;
+          -webkit-border-radius: 0 0 10px 10px;
+          border-radius: 0 0 10px 10px;
+        }
+        
+        
+        
+        /* TABS */
+        
+        h2.inactive {
+          color: #cccccc;
+        }
+        
+        h2.active {
+          color: #0d0d0d;
+          border-bottom: 2px solid #5fbae9;
+        }
+        
+        
+        
+        /* FORM TYPOGRAPHY*/
+        
+        input[type=button], input[type=submit], input[type=reset]  {
+          background-color: #56baed;
+          border: none;
+          color: white;
+          padding: 15px 80px;
+          text-align: center;
+          text-decoration: none;
+          display: inline-block;
+          text-transform: uppercase;
+          font-size: 13px;
+          -webkit-box-shadow: 0 10px 30px 0 rgba(95,186,233,0.4);
+          box-shadow: 0 10px 30px 0 rgba(95,186,233,0.4);
+          -webkit-border-radius: 5px 5px 5px 5px;
+          border-radius: 5px 5px 5px 5px;
+          margin: 5px 20px 40px 20px;
+          -webkit-transition: all 0.3s ease-in-out;
+          -moz-transition: all 0.3s ease-in-out;
+          -ms-transition: all 0.3s ease-in-out;
+          -o-transition: all 0.3s ease-in-out;
+          transition: all 0.3s ease-in-out;
+        }
+        
+        input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover  {
+          background-color: #39ace7;
+        }
+        
+        input[type=button]:active, input[type=submit]:active, input[type=reset]:active  {
+          -moz-transform: scale(0.95);
+          -webkit-transform: scale(0.95);
+          -o-transform: scale(0.95);
+          -ms-transform: scale(0.95);
+          transform: scale(0.95);
+        }
+        
+        input[type=text] {
+          background-color: #f6f6f6;
+          border: none;
+          color: #0d0d0d;
+          padding: 15px 32px;
+          text-align: center;
+          text-decoration: none;
+          display: inline-block;
+          font-size: 16px;
+          margin: 5px;
+          width: 85%;
+          border: 2px solid #f6f6f6;
+          -webkit-transition: all 0.5s ease-in-out;
+          -moz-transition: all 0.5s ease-in-out;
+          -ms-transition: all 0.5s ease-in-out;
+          -o-transition: all 0.5s ease-in-out;
+          transition: all 0.5s ease-in-out;
+          -webkit-border-radius: 5px 5px 5px 5px;
+          border-radius: 5px 5px 5px 5px;
+        }
+        
+        input[type=text]:focus {
+          background-color: #fff;
+          border-bottom: 2px solid #5fbae9;
+        }
+        
+        input[type=text]:placeholder {
+          color: #cccccc;
+        }
+        
+        
+        
+        /* ANIMATIONS */
+        
+        /* Simple CSS3 Fade-in-down Animation */
+        .fadeInDown {
+          -webkit-animation-name: fadeInDown;
+          animation-name: fadeInDown;
+          -webkit-animation-duration: 1s;
+          animation-duration: 1s;
+          -webkit-animation-fill-mode: both;
+          animation-fill-mode: both;
+        }
+        
+        @-webkit-keyframes fadeInDown {
+          0% {
+            opacity: 0;
+            -webkit-transform: translate3d(0, -100%, 0);
+            transform: translate3d(0, -100%, 0);
+          }
+          100% {
+            opacity: 1;
+            -webkit-transform: none;
+            transform: none;
+          }
+        }
+        
+        @keyframes fadeInDown {
+          0% {
+            opacity: 0;
+            -webkit-transform: translate3d(0, -100%, 0);
+            transform: translate3d(0, -100%, 0);
+          }
+          100% {
+            opacity: 1;
+            -webkit-transform: none;
+            transform: none;
+          }
+        }
+        
+        /* Simple CSS3 Fade-in Animation */
+        @-webkit-keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        @-moz-keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        
+        .fadeIn {
+          opacity:0;
+          -webkit-animation:fadeIn ease-in 1;
+          -moz-animation:fadeIn ease-in 1;
+          animation:fadeIn ease-in 1;
+        
+          -webkit-animation-fill-mode:forwards;
+          -moz-animation-fill-mode:forwards;
+          animation-fill-mode:forwards;
+        
+          -webkit-animation-duration:0.3s;
+          -moz-animation-duration:0.3s;
+          animation-duration:0.3s;
+        }
+        
+        .fadeIn.first {
+          -webkit-animation-delay: 0.4s;
+          -moz-animation-delay: 0.4s;
+          animation-delay: 0.4s;
+        }
+        
+        .fadeIn.second {
+          -webkit-animation-delay: 0.3s;
+          -moz-animation-delay: 0.3s;
+          animation-delay: 0.3s;
+        }
+        
+        .fadeIn.third {
+          -webkit-animation-delay: 0.3s;
+          -moz-animation-delay: 0.3s;
+          animation-delay: 0.3s;
+        }
+        
+        .fadeIn.fourth {
+          -webkit-animation-delay: 0.3s;
+          -moz-animation-delay: 0.3s;
+          animation-delay: 0.3s;
+        }
+        
+        /* Simple CSS3 Fade-in Animation */
+        .underlineHover:after {
+          display: block;
+          left: 0;
+          bottom: -10px;
+          width: 0;
+          height: 2px;
+          background-color: #56baed;
+          content: "";
+          transition: width 0.2s;
+        }
+        
+        .underlineHover:hover {
+          color: #0d0d0d;
+        }
+        
+        .underlineHover:hover:after{
+          width: 100%;
+        }
+        
+        
+        
+        /* OTHERS */
+        
+        *:focus {
+            outline: none;
+        } 
+        
+        #icon {
+          width:60%;
+        }
+        
+        * {
+          box-sizing: border-box;
+        }
+        .loader {
+  font-size: 10px;
+  margin: 30% auto;
+  text-indent: -9999em;
+  width: 11em;
+  height: 11em;
+  border-radius: 50%;
+  background: #ffffff;
+  background: -moz-linear-gradient(left, #ffffff 10%, rgba(255, 255, 255, 0) 42%);
+  background: -webkit-linear-gradient(left, #ffffff 10%, rgba(255, 255, 255, 0) 42%);
+  background: -o-linear-gradient(left, #ffffff 10%, rgba(255, 255, 255, 0) 42%);
+  background: -ms-linear-gradient(left, #ffffff 10%, rgba(255, 255, 255, 0) 42%);
+  background: linear-gradient(to right, #ffffff 10%, rgba(255, 255, 255, 0) 42%);
+  position: relative;
+  -webkit-animation: load3 1.4s infinite linear;
+  animation: load3 1.4s infinite linear;
+}
+.loader:before {
+  width: 50%;
+  height: 50%;
+  background: #FFF;
+  border-radius: 100% 0 0 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  content: '';
+}
+.loader:after {
+  background: #0dcecb;
+  width: 75%;
+  height: 75%;
+  border-radius: 50%;
+  content: '';
+  margin: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+@-webkit-keyframes load3 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes load3 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+        </style>
+</body>
+</html>
